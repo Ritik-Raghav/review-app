@@ -1,148 +1,136 @@
 
+window.addEventListener('DOMContentLoaded', loadData);
+
 const form = document.querySelector('#create');
+
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const companyName = event.target.companyName.value;
-    const pros = event.target.pros.value;
-    const cons = event.target.cons.value;
+
+    const title = event.target.blogTitle.value;
+    const author = event.target.blogAuthor.value;
+    const content = event.target.blogContent.value;
+
+    const obj = {
+        title,
+        author,
+        content
+    }
     
-    const ratingInputs = document.querySelectorAll('input[name="rating"]');
-    let ratingValue = document.getElementById('rating-value');
-
-        // Add an event listener for each input
-        ratingInputs.forEach(input => {
-            
-            input.addEventListener('change', (e) => {
-                ratingValue.value = e.target.value;
-            });
-            
-        });
-
-        const rating  = document.getElementById('rating-value').value;
-
-        
-        let obj = {
-            companyName,
-            pros,
-            cons,
-            rating
-        }
-        console.log(obj)
-
     try {
         const response = await axios.post('http://localhost:3000/', obj);
         const data = response.data;
-        displayPost(data);
+        displayItems(data);
     }
     catch(error) {
-        console.log(error);
+        console.log(error)
     }
-    
+
     event.target.reset();
-});
+})
 
-const search = document.querySelector('#search');
 
-search.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    const name = event.target.searchCompany.value;
+ function displayItems(data) {
+    console.log(data)
+    const head = document.createElement('div');
+    head.className = 'card';
+    const body = document.createElement('div');
+    body.className = 'card';
 
+    const blogName = document.createElement('h4');
+    blogName.textContent = data.title;
+
+    const blogAuthor = document.createElement('h5');
+    blogAuthor.textContent = 'Author : ' + data.author;
+
+    const blogContent = document.createElement('p');
+    blogContent.textContent = data.content;
+
+    const commentForm = document.createElement('form');
+    const input = document.createElement('input');
+    input.name = 'comment';
+    input.textContent = 'Comments';
+    input.type = 'text';
+
+    const button = document.createElement('button');
+    button.type = 'submit';
+    button.textContent = 'Submit';
+
+    commentForm.appendChild(input);
+    commentForm.appendChild(button);
+
+    head.appendChild(blogName);
+    body.appendChild(blogAuthor);
+    body.appendChild(blogContent);
+    body.appendChild(commentForm);
+
+    const element = document.querySelector('#element');
+    element.appendChild(head);
+    element.appendChild(body);
+
+    function displayComments(data) {
+        const div = document.createElement('div');
+        const comment = document.createElement('p');
+        comment.textContent = data.comment;
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'delete';
+        div.appendChild(comment);
+        div.appendChild(delBtn);
+
+        delBtn.onclick = (event) => {
+            body.removeChild(event.target.parentElement);
+        }
+
+        body.appendChild(div);
+    }
+
+    commentForm.onsubmit = async (event) => {
+        event.preventDefault();
+        loadComments();
+        const comment = event.target.comment.value;
+        const obj = {
+            comment
+        }
+        console.log(comment);
+        try {
+            const response = await axios.post(`http://localhost:3000/comment/${data.id}`, obj);
+            const commentData = response.data;
+            displayComments(commentData);
+
+            //const getResponse = await axios.get(`http://localhost:3000/comment/${data.id}`);
+            //const comments = getResponse.data;
+            
+            
+        }
+        catch(error) {
+            console.log(error);
+        }
+    }
+
+    async function loadComments() {
+        try {
+            const response = await axios.get(`http://localhost:3000/comment/${data.id}`);
+            const data = response.data;
+            data.forEach(element => {
+                displayItems(element);
+            })
+        }
+        catch(error) {
+            console.log(error);
+        }
+    }
+}
+
+
+
+async function loadData() {
     try {
         const response = await axios.get('http://localhost:3000/');
         const data = response.data;
-        //displayRating(data);
-        data.forEach(review => {
-            if (name === review.companyName) {
-                displayPost(review, data);
-                displayElement(data, name);
-            }
+        data.forEach(element => {
+            displayItems(element);
         })
-
     }
     catch(error) {
         console.log(error);
     }
-})
-
-function displayPost(obj, arr) {
-
-    const rate = displayRating(arr);
-    console.log(rate)
-    
-    const div = document.createElement('div');
-    div.className = 'card card-title text-center';
-    div.id = 'hi';
-    const heading1 = document.createElement('h5');
-    heading1.textContent = 'Company Name : ' + obj.companyName;
-
-    const heading2 = document.createElement('h5');
-    heading2.textContent = 'Company Rating : ' + rate;
-
-
-
-    // const pros = document.createElement('p');
-    // pros.textContent = 'Pros : ' + obj.pros;
-
-    // const cons = document.createElement('p');
-    // cons.textContent = 'Cons : ' + obj.cons;
-
-    // let rating = document.createElement('p');
-    // rating.textContent = 'Rating : ' + obj.rating;
-
-    div.appendChild(heading1);
-    div.appendChild(heading2);
-
-    const post = document.querySelector('#post');
-    post.appendChild(div);
-
-    
-}
-
-function displayElement(obj, name) {
-    
-    // const div = document.createElement('div');
-    // div.className = 'card card-title text-center';
-    // const heading1 = document.createElement('h5');
-    // heading1.textContent = 'Company Name : ' + obj.companyName;
-
-    // const heading2 = document.createElement('h5');
-    // heading2.textContent = 'Company Rating : ' + obj.rating;
-
-    const div = document.createElement('div');
-    
-
-    obj.forEach(data => {
-        if (name === data.companyName) {
-        
-            const pros = document.createElement('p');
-            pros.textContent = 'Pros : ' + data.pros;
-    
-            const cons = document.createElement('p');
-            cons.textContent = 'Cons : ' + data.cons;
-    
-            let rating = document.createElement('p');
-            rating.textContent = 'Rating : ' + data.rating;
-    
-            const hr = document.createElement('hr');
-    
-    
-            div.appendChild(pros);
-            div.appendChild(cons);
-            div.appendChild(rating);
-            div.appendChild(hr);
-    
-            const hi = document.querySelector('#hi');
-            hi.appendChild(div);
-        }
-    })
-    
-}
-
-function displayRating(obj) {
-    let rating = 0;
-    obj.forEach(object => {
-        rating = object.rating + rating;
-    })
-    rating = rating/obj.length;
-    return rating;
 }

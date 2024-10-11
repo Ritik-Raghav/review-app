@@ -1,29 +1,27 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../util/database');
 
-const Review = sequelize.define('review', {
+const Blog = sequelize.define('blog', {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        unique: true
     },
-    companyName: {
+    title: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+    },
+    author: {
         type: Sequelize.STRING,
         allowNull: false
     },
-    pros: {
+    content: {
         type: Sequelize.STRING,
-        allowNull: false
-    },
-    cons: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    rating: {
-        type: Sequelize.INTEGER,
         allowNull: false
     }
 });
 
-module.exports = Review;
+module.exports = Blog;
